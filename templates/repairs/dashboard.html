@@ -1,0 +1,10 @@
+{% extends 'base.html' %}{% block content %}<div class="heading"><div><h1>Dashboard</h1><p>Your repair work at a glance.</p></div><a class="button" href="{% url 'request_create' %}">New request</a></div>
+<div class="cards"><article class="card stat"><strong>{{ total }}</strong><span>Total requests</span></article>
+<article class="card stat"><strong>{{ counts.new|default:0 }}</strong><span>New</span></article>
+<article class="card stat"><strong>{{ counts.in_progress|default:0 }}</strong><span>In progress</span></article>
+<article class="card stat"><strong>{{ counts.completed|default:0 }}</strong><span>Completed</span></article></div>
+<section class="card"><div class="heading"><h2>Recent requests</h2><a href="{% url 'request_list' %}">See all</a></div>
+<div class="table-scroll"><table><thead><tr><th>Item</th><th>Status</th><th>Category</th><th>Submitted</th></tr></thead><tbody>
+{% for repair in recent %}<tr><td><a href="{% url 'request_detail' repair.pk %}">{{ repair.item_name }}</a></td><td>{{ repair.get_status_display }}</td><td>{{ repair.category.name }}</td><td>{{ repair.created_at|date:'d M Y' }}</td></tr>
+{% empty %}<tr><td colspan="4">No requests yet.</td></tr>{% endfor %}</tbody></table></div></section>
+{% if parts_low %}<section class="card"><h2>Parts running low</h2>{% for part in parts_low %}<p>{{ part.name }}: {{ part.quantity }} {{ part.unit }} remaining</p>{% endfor %}</section>{% endif %}{% endblock %}

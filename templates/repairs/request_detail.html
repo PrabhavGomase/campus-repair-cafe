@@ -1,0 +1,13 @@
+{% extends 'base.html' %}{% block content %}<a href="{% url 'request_list' %}">← Requests</a>
+<div class="heading"><div><h1>{{ repair.item_name }}</h1><p>#{{ repair.pk }} · {{ repair.get_status_display }} · {{ repair.category.name }}</p></div></div>
+<div class="grid"><section class="card"><h2>Request</h2><p>{{ repair.description|linebreaks }}</p><p><strong>Requester:</strong> {{ repair.requester.username }}</p><p><strong>Submitted:</strong> {{ repair.created_at|date:'d M Y, H:i' }}</p>
+{% if repair.assignment %}<p><strong>Volunteer:</strong> {{ repair.assignment.volunteer.username }}</p>{% endif %}
+<div class="actions">{% if repair.requester_id == user.pk and repair.status == 'new' %}<a class="button secondary" href="{% url 'request_edit' repair.pk %}">Edit</a>{% endif %}
+{% if coordinator and repair.status != 'completed' and repair.status != 'cancelled' %}<a class="button secondary" href="{% url 'assign' repair.pk %}">Assign</a>{% endif %}
+{% if assigned or coordinator %}{% if repair.status != 'completed' and repair.status != 'cancelled' %}<a class="button secondary" href="{% url 'add_session' repair.pk %}">Add session</a><a class="button secondary" href="{% url 'use_part' repair.pk %}">Use part</a>
+<form method="post" action="{% url 'complete' repair.pk %}">{% csrf_token %}<button type="submit">Complete</button></form>{% endif %}{% endif %}
+{% if repair.status == 'new' or repair.status == 'assigned' %}{% if coordinator or repair.requester_id == user.pk %}<form method="post" action="{% url 'cancel' repair.pk %}">{% csrf_token %}<button class="danger" type="submit">Cancel request</button></form>{% endif %}{% endif %}</div></section>
+<section class="card"><h2>Repair sessions</h2>{% for session in repair.sessions.all %}<div class="item"><strong>{{ session.started_at|date:'d M Y, H:i' }}</strong><p>{{ session.findings }}</p><p>{{ session.outcome }}</p></div>{% empty %}<p>No sessions yet.</p>{% endfor %}
+<h2>Parts used</h2>{% for usage in repair.parts_used.all %}<p>{{ usage.part.name }} × {{ usage.quantity }}</p>{% empty %}<p>No parts used.</p>{% endfor %}
+<h2>Status history</h2>{% for entry in repair.history.all %}<p>{{ entry.changed_at|date:'d M Y, H:i' }} · {{ entry.old_status }} → {{ entry.new_status }}</p>{% empty %}<p>No changes yet.</p>{% endfor %}
+<h2>Feedback</h2>{% if repair.feedback %}<p>{{ repair.feedback.rating }}/5 · {{ repair.feedback.comment }}</p>{% elif repair.requester_id == user.pk and repair.status == 'completed' %}<a href="{% url 'feedback' repair.pk %}">Rate this repair</a>{% else %}<p>No feedback yet.</p>{% endif %}</section></div>{% endblock %}

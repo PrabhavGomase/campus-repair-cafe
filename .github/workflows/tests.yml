@@ -1,0 +1,39 @@
+name: Tests
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      POSTGRES_DB: repaircafe
+      POSTGRES_USER: repaircafe
+      POSTGRES_PASSWORD: ci-only-password
+      POSTGRES_HOST: localhost
+      POSTGRES_PORT: '5432'
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: repaircafe
+          POSTGRES_USER: repaircafe
+          POSTGRES_PASSWORD: ci-only-password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U repaircafe -d repaircafe"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.14'
+      - run: pip install -r requirements.txt
+      - run: python manage.py migrate
+      - run: python manage.py test
+      - run: python manage.py check --deploy
+        env:
+          DJANGO_SECRET_KEY: ci-only-long-random-placeholder-never-used-in-production
+          DJANGO_DEBUG: '0'
+          DJANGO_ALLOWED_HOSTS: localhost
+          DJANGO_SECURE_SSL_REDIRECT: '0'

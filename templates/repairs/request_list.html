@@ -1,0 +1,8 @@
+{% extends 'base.html' %}{% block content %}<div class="heading"><div><h1>Repair requests</h1><p>Search and track repair work.</p></div><a class="button" href="{% url 'request_create' %}">New request</a></div>
+<form class="filters card" method="get"><input name="q" value="{{ query }}" placeholder="Search items and descriptions" aria-label="Search requests">
+<select name="status" aria-label="Filter status"><option value="">All statuses</option>{% for value,label in statuses %}<option value="{{ value }}" {% if status == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select><button type="submit">Search</button></form>
+<section class="card table-scroll"><table><thead><tr><th>Item</th><th>Requester</th><th>Status</th><th>Date</th></tr></thead><tbody>{% for repair in page %}
+<tr><td><a href="{% url 'request_detail' repair.pk %}">{{ repair.item_name }}</a></td><td>{{ repair.requester.username }}</td><td>{{ repair.get_status_display }}</td><td>{{ repair.created_at|date:'d M Y' }}</td></tr>
+{% empty %}<tr><td colspan="4">No matching requests.</td></tr>{% endfor %}</tbody></table></section>
+<div class="pager">{% if page.has_previous %}<a href="?q={{ query|urlencode }}&status={{ status|urlencode }}&page={{ page.previous_page_number }}">Previous</a>{% endif %}
+<span>Page {{ page.number }} of {{ page.paginator.num_pages }}</span>{% if page.has_next %}<a href="?q={{ query|urlencode }}&status={{ status|urlencode }}&page={{ page.next_page_number }}">Next</a>{% endif %}</div>{% endblock %}

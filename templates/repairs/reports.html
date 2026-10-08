@@ -1,0 +1,3 @@
+{% extends 'base.html' %}{% block content %}<h1>Repair reports</h1><div class="cards"><article class="card stat"><strong>{{ completed }}</strong><span>Completed repairs</span></article><article class="card stat"><strong>{{ donated }}</strong><span>Parts donated</span></article></div>
+<div class="grid"><section class="card"><h2>Requests by category</h2>{% for row in by_category %}<p>{{ row.category__name }}: {{ row.total }}</p>{% empty %}<p>No data yet.</p>{% endfor %}</section>
+<section class="card"><h2>Most used parts</h2>{% for row in top_parts %}<p>{{ row.part__name }}: {{ row.total }}</p>{% empty %}<p>No parts used yet.</p>{% endfor %}</section></div>{% endblock %}

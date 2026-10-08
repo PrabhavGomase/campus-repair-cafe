@@ -1,0 +1,11 @@
+{% load static %}<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}Repair Café{% endblock %}</title><link rel="stylesheet" href="{% static 'css/site.css' %}"></head>
+<body><header><nav class="wrap"><a class="brand" href="{% url 'dashboard' %}">Repair Café</a>
+{% if user.is_authenticated %}<a href="{% url 'request_list' %}">Requests</a><a href="{% url 'part_list' %}">Parts</a>
+{% if user.role == 'coordinator' or user.is_superuser %}<a href="{% url 'reports' %}">Reports</a><a href="{% url 'admin:index' %}">Admin</a>{% endif %}
+<span class="push">{{ user.username }} · {{ user.get_role_display }}</span>
+<form action="{% url 'logout' %}" method="post">{% csrf_token %}<button class="link" type="submit">Log out</button></form>
+{% else %}<span class="push"></span><a href="{% url 'login' %}">Log in</a><a href="{% url 'register' %}">Register</a>{% endif %}
+</nav></header><main class="wrap">{% for message in messages %}<div class="notice">{{ message }}</div>{% endfor %}
+{% block content %}{% endblock %}</main><footer class="wrap">Campus Repair Café · Reuse, repair, record</footer></body></html>
