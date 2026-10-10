@@ -34,6 +34,9 @@ def record_donation(*, part, donor, quantity, notes=''):
 def record_usage(*, repair, part, quantity, actor):
     if quantity < 1:
         raise ValidationError('Quantity must be positive.')
+    # Lock the repair row and re-check its status, so a repair that was
+    # completed or cancelled in the meantime cannot consume stock.
+    repair = RepairRequest.objects.select_for_update().get(pk=repair.pk)
     if repair.status in {RepairRequest.Status.COMPLETED, RepairRequest.Status.CANCELLED}:
         raise ValidationError('This repair is closed.')
     updated = SparePart.objects.filter(pk=part.pk, quantity__gte=quantity).update(quantity=F('quantity') - quantity)

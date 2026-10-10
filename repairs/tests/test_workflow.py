@@ -61,3 +61,14 @@ class RepairWorkflowTests(TestCase):
         self.assertEqual(self.client.get(reverse('request_detail', args=[self.repair.pk])).status_code, 404)
         RepairAssignment.objects.create(request=self.repair, volunteer=self.volunteer, assigned_by=self.coordinator)
         self.assertEqual(self.client.get(reverse('request_detail', args=[self.repair.pk])).status_code, 200)
+
+    def test_usage_rejected_when_repair_closed_after_object_was_loaded(self):
+        record_donation(part=self.part, donor=self.requester, quantity=3)
+        # Simulate another request completing the repair after this object was loaded.
+        RepairRequest.objects.filter(pk=self.repair.pk).update(status=RepairRequest.Status.COMPLETED)
+        self.assertNotEqual(self.repair.status, RepairRequest.Status.COMPLETED)  # stale copy
+        with self.assertRaises(ValidationError):
+            record_usage(repair=self.repair, part=self.part, quantity=1, actor=self.volunteer)
+        self.part.refresh_from_db()
+        self.assertEqual(self.part.quantity, 3)
+        self.assertEqual(self.repair.parts_used.count(), 0)
